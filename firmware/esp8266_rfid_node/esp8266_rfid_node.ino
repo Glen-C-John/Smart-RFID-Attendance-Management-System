@@ -30,12 +30,11 @@
 // 2. NETWORK & BACKEND CONFIGURATION
 // ==========================================
 // Change to your local Wi-Fi credentials
-#define WIFI_SSID       "Asus"
-#define WIFI_PASSWORD   "11418719"
+#define WIFI_SSID       "Glen 5G"
+#define WIFI_PASSWORD   "9769011326"
 
-// Backend API URL (Replace with your computer's local IP on port 5001)
-// Your Mac local IP is currently: 192.168.50.166
-#define BACKEND_SCAN_URL "http://192.168.50.166:5001/api/v1/device/scan"
+// Backend API URL (Your Mac local IP is 192.168.29.235 on port 5001)
+#define BACKEND_SCAN_URL "http://192.168.29.235:5001/api/v1/device/scan"
 
 // Device Authentication Credentials
 #define DEVICE_ID        "ESP8266_001"
@@ -298,7 +297,9 @@ bool readBlockDataFromCard(int blockNumber, byte* outputBuffer) {
     return false;
   }
 
-  status = mfrc522.MIFARE_Read(blockNumber, outputBuffer, &bufferLen);
+  // bufferLen MUST be at least 18 bytes for MIFARE_Read
+  byte len = 18;
+  status = mfrc522.MIFARE_Read(blockNumber, outputBuffer, &len);
   if (status != MFRC522::STATUS_OK) {
     Serial.printf("[RFID] Read failed for Block %d: %s\n", blockNumber, mfrc522.GetStatusCodeName(status));
     return false;
@@ -312,7 +313,7 @@ bool readBlockDataFromCard(int blockNumber, byte* outputBuffer) {
 // ==========================================
 void setup() {
   Serial.begin(9600);
-  delay(500);
+  delay(300);
   Serial.println();
   Serial.println(F("===================================================="));
   Serial.println(F("  Smart RFID Attendance System - Firmware v2.0     "));
@@ -321,14 +322,29 @@ void setup() {
   pinMode(BUZZER, OUTPUT);
   digitalWrite(BUZZER, LOW);
 
+  // Startup chirp
+  digitalWrite(BUZZER, HIGH);
+  delay(100);
+  digitalWrite(BUZZER, LOW);
+
   // Initialize LittleFS local flash queue
   initLittleFS();
 
-  // Initialize SPI & MFRC522
+  // Initialize SPI & MFRC522 with explicit hardware reset
   SPI.begin();
   SPI.setFrequency(1000000);
+
+  pinMode(RST_PIN, OUTPUT);
+  digitalWrite(RST_PIN, LOW);
+  delay(50);
+  digitalWrite(RST_PIN, HIGH);
+  delay(50);
+
   mfrc522.PCD_Init();
-  Serial.println(F("[MFRC522] RFID Reader initialized on SPI bus."));
+  mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);
+
+  Serial.print(F("[MFRC522] RFID Reader Version: "));
+  mfrc522.PCD_DumpVersionToSerial();
 
   // Connect to Wi-Fi
   Serial.print(F("[WiFi] Connecting to: "));
@@ -337,8 +353,8 @@ void setup() {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   int wifiAttempts = 0;
-  while (WiFi.status() != WL_CONNECTED && wifiAttempts < 30) {
-    delay(250);
+  while (WiFi.status() != WL_CONNECTED && wifiAttempts < 40) {
+    delay(200);
     Serial.print(".");
     wifiAttempts++;
   }
@@ -350,7 +366,7 @@ void setup() {
     syncNtpTime();
     flushOfflineQueue();
   } else {
-    Serial.println(F("\n[WiFi] Connection failed. Device will operate in Offline Queue mode."));
+    Serial.println(F("\n[WiFi] Connection timeout. Device will buffer scans in Offline Queue mode."));
   }
 
   Serial.println(F("\nReady. Scan an RFID Tag to record attendance...\n"));
@@ -360,6 +376,10 @@ void setup() {
 // 10. MAIN EVENT LOOP
 // ==========================================
 void loop() {
+  // Always lock SPI frequency to 1MHz and keep MFRC522 active
+  SPI.setFrequency(1000000);
+  mfrc522.PCD_Init();
+
   // Periodically check and flush pending offline scan events
   if (millis() - lastQueueFlushMillis > QUEUE_FLUSH_INTERVAL) {
     lastQueueFlushMillis = millis();
@@ -368,13 +388,11 @@ void loop() {
 
   // Check if a new card is present
   if (!mfrc522.PICC_IsNewCardPresent()) {
-    delay(50);
     return;
   }
 
-  // Read card serial
+  // Select the card
   if (!mfrc522.PICC_ReadCardSerial()) {
-    delay(50);
     return;
   }
 
@@ -448,6 +466,5 @@ void loop() {
   // 6. Halt RFID PICC & Stop Cryptography
   mfrc522.PICC_HaltA();
   mfrc522.PCD_StopCrypto1();
-  delay(100);
 }
 

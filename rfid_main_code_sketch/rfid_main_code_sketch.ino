@@ -27,8 +27,8 @@ String card_holder_name;
 const String sheet_url = "https://script.google.com/macros/s/AKfycbzNgQwtV6FtHXVEv69tYC_iymEERBxetlxZItJTCyjqtNH1RB00FQXz8FzjXGYxrJad/exec?name=";
 
 //-----------------------------------------
-#define WIFI_SSID "Asus"
-#define WIFI_PASSWORD "11418719"
+#define WIFI_SSID "Glen 5G"
+#define WIFI_PASSWORD "9769011326"
 
 //-----------------------------------------
 
