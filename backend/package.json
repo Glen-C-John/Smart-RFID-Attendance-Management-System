@@ -1,0 +1,49 @@
+{
+  "name": "rfid-attendance-backend",
+  "version": "1.0.0",
+  "description": "Smart RFID Attendance Management System Backend",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "db:start": "mkdir -p data/db && /Users/glenjohn/.cache/mongodb-binaries/mongod-arm64-darwin-7.0.14 --dbpath data/db --bind_ip 127.0.0.1 --port 27017 --fork --logpath data/db/mongod.log",
+    "db:stop": "/Users/glenjohn/.cache/mongodb-binaries/mongod-arm64-darwin-7.0.14 --dbpath data/db --shutdown || true",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest --runInBand --detectOpenHandles --forceExit",
+    "migrate": "node src/scripts/migrateGoogleSheets.js",
+    "seed": "node src/scripts/seedData.js"
+  },
+  "keywords": [
+    "rfid",
+    "esp8266",
+    "attendance",
+    "iot",
+    "mfrc522",
+    "mongodb"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "csv-parser": "^3.2.1",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "helmet": "^8.3.0",
+    "luxon": "^3.7.2",
+    "mongoose": "^9.11.4",
+    "morgan": "^1.12.1",
+    "uuid": "^14.0.3"
+  },
+  "devDependencies": {
+    "jest": "^30.5.2",
+    "mongodb-memory-server": "^11.3.0",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.3.1"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
+    "testTimeout": 30000
+  }
+}
