@@ -49,8 +49,10 @@ class AttendanceService {
       // Auto-enroll physical card if tagData matches an existing active student
       if (tagData && tagData.trim()) {
         const cleanTag = tagData.trim();
+        // Escape regex special characters to prevent ReDoS and wildcard injection
+        const escapedTag = cleanTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const matchedStudent = await Student.findOne({
-          name: new RegExp(`^${cleanTag}$`, 'i'),
+          name: new RegExp(`^${escapedTag}$`, 'i'),
           status: 'active',
         });
         if (matchedStudent) {

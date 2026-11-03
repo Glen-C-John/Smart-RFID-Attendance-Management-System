@@ -32,7 +32,7 @@ describe('Google Sheets to MongoDB Migration Tests', () => {
     });
 
     expect(summary.totalRows).toBe(7);
-    expect(summary.students.created).toBe(4); // Mani, Rahul, Priya, Sneha
+    expect(summary.students.created).toBe(4); // Mani, Rugved, Glen, Shivam
     expect(summary.cards.created).toBe(4);
     expect(summary.attendance.created).toBe(7);
 
@@ -43,7 +43,7 @@ describe('Google Sheets to MongoDB Migration Tests', () => {
     expect(studentMani.className).toBe('CSE-A');
 
     // Verify card was created preserving legacy block data
-    const cardMani = await RfidCard.findOne({ cardUid: 'A1:B2:C3:D4' });
+    const cardMani = await RfidCard.findOne({ cardUid: '17:A7:17:98' });
     expect(cardMani).not.toBeNull();
     expect(cardMani.storedTagData).toBe('Mani');
 

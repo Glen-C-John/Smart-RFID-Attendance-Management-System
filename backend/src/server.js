@@ -1,5 +1,6 @@
 const http = require('http');
 const { Server } = require('socket.io');
+const jwt = require('jsonwebtoken');
 const app = require('./app');
 const config = require('./config');
 const { connectDB, disconnectDB } = require('./config/db');
@@ -14,8 +15,29 @@ const io = new Server(server, {
 
 app.set('io', io);
 
+// Enforce authentication for real-time WebSocket stream
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization?.replace(/^Bearer\s+/i, '');
+  if (!token) {
+    return next(new Error('Authentication error: Missing token'));
+  }
+
+  if (token === config.adminApiKey) {
+    socket.user = { username: config.adminUsername, role: 'admin' };
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(token, config.jwtSecret);
+    socket.user = decoded;
+    return next();
+  } catch (err) {
+    return next(new Error('Authentication error: Invalid or expired token'));
+  }
+});
+
 io.on('connection', (socket) => {
-  console.log(`[Socket.IO] Admin client connected: ${socket.id}`);
+  console.log(`[Socket.IO] Authenticated admin client connected: ${socket.id} (${socket.user?.username || 'admin'})`);
   socket.on('disconnect', () => {
     console.log(`[Socket.IO] Client disconnected: ${socket.id}`);
   });

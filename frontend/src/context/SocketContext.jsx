@@ -1,19 +1,28 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
+import { useAuth } from './AuthContext';
 
 const SocketContext = createContext(null);
 
 export const SocketProvider = ({ children }) => {
+  const { isAuthenticated } = useAuth();
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [lastScanEvent, setLastScanEvent] = useState(null);
   const [toastNotification, setToastNotification] = useState(null);
 
   useEffect(() => {
-    // Connect to backend relative URL via Vite proxy or current host
+    const token = localStorage.getItem('rfid_auth_token');
+    if (!isAuthenticated || !token) {
+      setIsConnected(false);
+      return;
+    }
+
+    // Connect to backend relative URL via Vite proxy or current host with JWT auth
     const socketInstance = io(window.location.origin, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
+      auth: { token },
       reconnectionAttempts: 10,
       reconnectionDelay: 2000,
     });
@@ -21,6 +30,11 @@ export const SocketProvider = ({ children }) => {
     socketInstance.on('connect', () => {
       console.log('[Socket.IO] Connected to backend server');
       setIsConnected(true);
+    });
+
+    socketInstance.on('connect_error', (err) => {
+      console.warn('[Socket.IO] Authentication or connection error:', err.message);
+      setIsConnected(false);
     });
 
     socketInstance.on('disconnect', () => {
@@ -50,7 +64,7 @@ export const SocketProvider = ({ children }) => {
     return () => {
       socketInstance.disconnect();
     };
-  }, []);
+  }, [isAuthenticated]);
 
   const dismissToast = () => setToastNotification(null);
 

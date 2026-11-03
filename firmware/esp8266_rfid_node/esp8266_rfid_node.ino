@@ -176,20 +176,28 @@ void flushOfflineQueue() {
 
   // Buffer lines into temporary memory to flush sequentially
   std::vector<String> failedLines;
+  bool stopPosting = false;
+
   while (f.available()) {
     String line = f.readStringUntil('\n');
     line.trim();
     if (line.length() == 0) continue;
 
-    Serial.print(F("[Queue] Synchronizing event: "));
-    Serial.println(line);
+    if (!stopPosting) {
+      Serial.print(F("[Queue] Synchronizing event: "));
+      Serial.println(line);
 
-    bool ok = postScanPayload(line, true);
-    if (!ok) {
+      bool ok = postScanPayload(line, true);
+      if (!ok) {
+        failedLines.push_back(line);
+        stopPosting = true; // Stop posting further items, but continue buffering remainder of file
+      } else {
+        delay(200); // Gentle spacing between requests
+      }
+    } else {
+      // Server/network unreachable: retain all remaining unposted events
       failedLines.push_back(line);
-      break; // Stop flushing if network/server is still failing
     }
-    delay(200); // Gentle spacing between requests
   }
   f.close();
 

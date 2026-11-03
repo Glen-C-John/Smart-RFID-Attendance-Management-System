@@ -241,5 +241,27 @@ describe('RFID Attendance & Scan API Tests', () => {
     expect(record.status).toBe('late');
     expect(record.attendanceDate).toBe('2026-11-03');
   });
+
+  // Scenario 13: Prevent regex wildcard injection during auto-enrollment
+  it('13. should not auto-enroll cards when tagData contains regex wildcards matching students', async () => {
+    // Attempt scan with wildcard regex tagData '.*'
+    const res = await request(app)
+      .post('/api/v1/device/scan')
+      .set('x-device-id', testDeviceId)
+      .set('x-device-key', testDeviceKey)
+      .send({
+        deviceId: testDeviceId,
+        cardUid: '88:99:AA:BB',
+        tagData: '.*',
+      });
+
+    // Should return 404 because no student has literal name '.*'
+    expect(res.status).toBe(404);
+    expect(res.body.success).toBe(false);
+
+    // Verify card was NOT auto-enrolled or bound to Mani
+    const card = await RfidCard.findOne({ cardUid: '88:99:AA:BB' });
+    expect(card).toBeNull();
+  });
 });
 
