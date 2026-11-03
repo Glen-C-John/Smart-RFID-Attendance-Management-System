@@ -31,24 +31,32 @@ const seedData = async () => {
         name: 'Mani',
         email: 'mani@college.edu',
         phone: '+919876543210',
-        className: 'CSE-4A',
+        className: 'CSE-A',
         department: 'Computer Science',
       },
       {
         studentId: 'STU002',
-        name: 'Rahul Sharma',
-        email: 'rahul@college.edu',
+        name: 'Rugved',
+        email: 'rugved@college.edu',
         phone: '+919876543211',
-        className: 'CSE-4A',
+        className: 'CSE-A',
         department: 'Computer Science',
       },
       {
         studentId: 'STU003',
-        name: 'Priya Patel',
-        email: 'priya@college.edu',
+        name: 'Glen',
+        email: 'glen@college.edu',
         phone: '+919876543212',
-        className: 'ECE-3B',
-        department: 'Electronics',
+        className: 'CSE-B',
+        department: 'Computer Science',
+      },
+      {
+        studentId: 'STU004',
+        name: 'Shivam',
+        email: 'shivam@college.edu',
+        phone: '+919876543213',
+        className: 'CSE-B',
+        department: 'Computer Science',
       },
     ];
 
@@ -60,25 +68,31 @@ const seedData = async () => {
       }
     }
 
-    // 3. Seed RFID Cards (including Mani's legacy tag with tagData "Mani")
+    // 3. Seed Physical RFID Cards (with tagData matching sector block 2 values)
     const cardsData = [
       {
-        cardUid: 'A1:B2:C3:D4',
+        cardUid: '17:A7:17:98',
         studentId: 'STU001',
-        storedTagData: 'Mani', // Matches what was written into block 2
+        storedTagData: 'Mani',
         status: 'active',
       },
       {
-        cardUid: 'E5:F6:A7:B8',
+        cardUid: '46:26:F3:06',
         studentId: 'STU002',
-        storedTagData: 'Rahul',
+        storedTagData: 'Rugved',
         status: 'active',
       },
       {
-        cardUid: '11:22:33:44',
+        cardUid: '02:96:64:06',
         studentId: 'STU003',
-        storedTagData: 'Priya',
-        status: 'blocked', // Test blocked card scenario
+        storedTagData: 'Glen',
+        status: 'active',
+      },
+      {
+        cardUid: '27:CD:B6:98',
+        studentId: 'STU004',
+        storedTagData: 'Shivam',
+        status: 'active',
       },
     ];
 

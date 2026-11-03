@@ -26,7 +26,7 @@ import {
   Bar,
   Legend,
 } from 'recharts';
-import { dashboardService } from '../services/dashboardService';
+import { dashboardService } from '../services';
 import { useSocket } from '../context/SocketContext';
 
 export const Dashboard = () => {

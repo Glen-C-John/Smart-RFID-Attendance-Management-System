@@ -38,40 +38,8 @@ const getAttendance = async (req, res, next) => {
       filter.studentId = { $in: studentIds };
     }
 
-    const skip = (page - 1) * limit;
-    const [rawRecords, total] = await Promise.all([
-      Attendance.find(filter).sort({ checkInTime: -1 }).skip(skip).limit(limit).lean(),
-      Attendance.countDocuments(filter),
-    ]);
-
-    // Populate student and device details for the table
-    const sIds = [...new Set(rawRecords.map((r) => r.studentId))];
-    const dIds = [...new Set(rawRecords.map((r) => r.deviceId))];
-
-    const [students, devices] = await Promise.all([
-      Student.find({ studentId: { $in: sIds } }, 'studentId name className department').lean(),
-      Device.find({ deviceId: { $in: dIds } }, 'deviceId deviceName location').lean(),
-    ]);
-
-    const sMap = Object.fromEntries(students.map((s) => [s.studentId, s]));
-    const dMap = Object.fromEntries(devices.map((d) => [d.deviceId, d]));
-
-    const records = rawRecords.map((r) => ({
-      ...r,
-      studentName: sMap[r.studentId]?.name || 'Unknown',
-      className: sMap[r.studentId]?.className || '-',
-      department: sMap[r.studentId]?.department || '-',
-      deviceName: dMap[r.deviceId]?.deviceName || r.deviceId,
-      location: dMap[r.deviceId]?.location || 'Main Gate',
-    }));
-
-    return successResponse(res, {
-      records,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    }, 'Attendance records retrieved');
+    const result = await attendanceService.getAttendance(filter, page, limit);
+    return successResponse(res, result, 'Attendance records retrieved');
   } catch (error) {
     next(error);
   }

@@ -12,7 +12,7 @@ import {
   Loader2,
   Filter,
 } from 'lucide-react';
-import { studentService } from '../services/studentService';
+import { studentService } from '../services';
 
 export const Students = () => {
   const [students, setStudents] = useState([]);

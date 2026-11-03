@@ -11,7 +11,7 @@ import {
   Clock,
   MapPin,
 } from 'lucide-react';
-import { deviceService } from '../services/deviceService';
+import { deviceService } from '../services';
 
 export const Devices = () => {
   const [devices, setDevices] = useState([]);

@@ -13,7 +13,7 @@ import {
   CheckCircle2,
   AlertCircle,
 } from 'lucide-react';
-import { attendanceService } from '../services/attendanceService';
+import { attendanceService } from '../services';
 
 export const Attendance = () => {
   const [records, setRecords] = useState([]);

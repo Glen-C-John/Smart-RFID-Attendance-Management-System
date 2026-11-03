@@ -1,6 +1,7 @@
 const Attendance = require('../models/Attendance');
 const RfidCard = require('../models/RfidCard');
 const Student = require('../models/Student');
+const Device = require('../models/Device');
 const config = require('../config');
 const {
   toTimezone,
@@ -236,19 +237,51 @@ class AttendanceService {
   }
 
   /**
+   * Enrich attendance records with student and device details in bulk.
+   * @param {Array} records - Lean attendance documents or objects.
+   * @returns {Promise<Array>}
+   */
+  async enrichAttendanceRecords(records) {
+    if (!records || records.length === 0) return [];
+    const sIds = [...new Set(records.map((r) => r.studentId).filter(Boolean))];
+    const dIds = [...new Set(records.map((r) => r.deviceId).filter(Boolean))];
+
+    const [students, devices] = await Promise.all([
+      Student.find({ studentId: { $in: sIds } }, 'studentId name className department').lean(),
+      Device.find({ deviceId: { $in: dIds } }, 'deviceId deviceName location').lean(),
+    ]);
+
+    const sMap = Object.fromEntries(students.map((s) => [s.studentId, s]));
+    const dMap = Object.fromEntries(devices.map((d) => [d.deviceId, d]));
+
+    return records.map((r) => {
+      const rec = typeof r.toObject === 'function' ? r.toObject() : { ...r };
+      return {
+        ...rec,
+        studentName: sMap[rec.studentId]?.name || 'Unknown',
+        className: sMap[rec.studentId]?.className || '-',
+        department: sMap[rec.studentId]?.department || '-',
+        deviceName: dMap[rec.deviceId]?.deviceName || rec.deviceId,
+        location: dMap[rec.deviceId]?.location || 'Main Gate',
+      };
+    });
+  }
+
+  /**
    * Query attendance records with filters.
    */
   async getAttendance(filter = {}, page = 1, limit = 50) {
     const skip = (page - 1) * limit;
-    const [records, total] = await Promise.all([
+    const [rawRecords, total] = await Promise.all([
       Attendance.find(filter)
         .sort({ checkInTime: -1 })
         .skip(skip)
         .limit(limit)
-        .populate({ path: 'studentId', select: 'name className department email', foreignField: 'studentId' }),
+        .lean(),
       Attendance.countDocuments(filter),
     ]);
 
+    const records = await this.enrichAttendanceRecords(rawRecords);
     return { records, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 

@@ -13,7 +13,7 @@ import {
   RefreshCw,
   Cpu,
 } from 'lucide-react';
-import { settingsService } from '../services/settingsService';
+import { settingsService } from '../services';
 
 export const Settings = () => {
   const [formData, setFormData] = useState({

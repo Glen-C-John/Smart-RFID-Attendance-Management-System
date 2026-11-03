@@ -10,8 +10,7 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react';
-import { cardService } from '../services/cardService';
-import { studentService } from '../services/studentService';
+import { cardService, studentService } from '../services';
 
 export const RFIDCards = () => {
   const [cards, setCards] = useState([]);

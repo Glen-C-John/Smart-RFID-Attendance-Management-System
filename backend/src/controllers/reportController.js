@@ -1,7 +1,7 @@
 const { DateTime } = require('luxon');
 const Attendance = require('../models/Attendance');
 const Student = require('../models/Student');
-const Device = require('../models/Device');
+const attendanceService = require('../services/attendanceService');
 const { nowInTimezone, formatTimeDisplay } = require('../utils/timezone');
 const { successResponse, errorResponse } = require('../utils/response');
 
@@ -48,31 +48,11 @@ const generateReport = async (req, res, next) => {
       Student.countDocuments(className ? { className, status: 'active' } : { status: 'active' }),
     ]);
 
-    // Populate metadata
-    const sIds = [...new Set(rawRecords.map((r) => r.studentId))];
-    const dIds = [...new Set(rawRecords.map((r) => r.deviceId))];
-
-    const [students, devices] = await Promise.all([
-      Student.find({ studentId: { $in: sIds } }, 'studentId name className department').lean(),
-      Device.find({ deviceId: { $in: dIds } }, 'deviceId deviceName location').lean(),
-    ]);
-
-    const sMap = Object.fromEntries(students.map((s) => [s.studentId, s]));
-    const dMap = Object.fromEntries(devices.map((d) => [d.deviceId, d]));
-
-    const records = rawRecords.map((r) => ({
-      _id: r._id,
-      studentId: r.studentId,
-      studentName: sMap[r.studentId]?.name || 'Unknown',
-      className: sMap[r.studentId]?.className || '-',
-      department: sMap[r.studentId]?.department || '-',
-      attendanceDate: r.attendanceDate,
+    const enriched = await attendanceService.enrichAttendanceRecords(rawRecords);
+    const records = enriched.map((r) => ({
+      ...r,
       checkInTime: r.checkInTime ? formatTimeDisplay(r.checkInTime) : null,
       checkOutTime: r.checkOutTime ? formatTimeDisplay(r.checkOutTime) : null,
-      status: r.status,
-      cardUid: r.cardUid,
-      deviceId: r.deviceId,
-      deviceName: dMap[r.deviceId]?.deviceName || r.deviceId,
     }));
 
     const totalSessions = records.length;

@@ -16,8 +16,7 @@ import {
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { reportService } from '../services/reportService';
-import { studentService } from '../services/studentService';
+import { reportService, studentService } from '../services';
 
 export const Reports = () => {
   const [reportType, setReportType] = useState('daily');

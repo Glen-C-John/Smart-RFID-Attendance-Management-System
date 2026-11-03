@@ -13,9 +13,7 @@ import {
   Phone,
   Building,
 } from 'lucide-react';
-import { studentService } from '../services/studentService';
-import { cardService } from '../services/cardService';
-import { attendanceService } from '../services/attendanceService';
+import { studentService, cardService, attendanceService } from '../services';
 
 export const StudentDetails = () => {
   const { id } = useParams();
