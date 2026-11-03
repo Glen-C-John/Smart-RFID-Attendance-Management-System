@@ -21,3 +21,4 @@ export const attendanceService = {
     return res.data.attendance;
   },
 };
+

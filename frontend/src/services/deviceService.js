@@ -26,3 +26,4 @@ export const deviceService = {
     return res.data.device;
   },
 };
+

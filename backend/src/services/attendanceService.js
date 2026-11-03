@@ -44,13 +44,37 @@ class AttendanceService {
     }
 
     // 2. Lookup RFID card
-    const card = await RfidCard.findOne({ cardUid: normalizedUid });
+    let card = await RfidCard.findOne({ cardUid: normalizedUid });
     if (!card) {
-      return {
-        success: false,
-        statusCode: 404,
-        message: 'Unregistered RFID card',
-      };
+      // Auto-enroll physical card if tagData matches an existing active student
+      if (tagData && tagData.trim()) {
+        const cleanTag = tagData.trim();
+        const matchedStudent = await Student.findOne({
+          name: new RegExp(`^${cleanTag}$`, 'i'),
+          status: 'active',
+        });
+        if (matchedStudent) {
+          card = await RfidCard.findOneAndUpdate(
+            { cardUid: normalizedUid },
+            {
+              cardUid: normalizedUid,
+              studentId: matchedStudent.studentId,
+              storedTagData: cleanTag,
+              status: 'active',
+              registeredAt: new Date(),
+            },
+            { upsert: true, returnDocument: 'after' }
+          );
+        }
+      }
+
+      if (!card) {
+        return {
+          success: false,
+          statusCode: 404,
+          message: 'Unregistered RFID card',
+        };
+      }
     }
 
     if (card.status === 'blocked') {

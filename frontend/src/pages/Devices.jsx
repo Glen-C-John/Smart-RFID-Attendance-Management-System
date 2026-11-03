@@ -429,3 +429,4 @@ export const Devices = () => {
     </div>
   );
 };
+

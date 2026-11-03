@@ -26,3 +26,4 @@ export const studentService = {
     return res.data;
   },
 };
+

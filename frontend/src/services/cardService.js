@@ -26,3 +26,4 @@ export const cardService = {
     return res.data.card;
   },
 };
+
