@@ -23,6 +23,25 @@ const handleScan = async (req, res, next) => {
 
     const statusCode = result.statusCode || (result.success ? 200 : 400);
 
+    // Broadcast real-time scan event via Socket.IO
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('attendance:scan', {
+        success: result.success,
+        studentName: result.studentName,
+        studentId: result.data?.studentId || null,
+        cardUid,
+        deviceId: effectiveDeviceId,
+        message: result.message,
+        attendanceStatus: result.attendanceStatus || null,
+        checkInTime: result.checkInTime || null,
+        checkOutTime: result.checkOutTime || null,
+        action: result.action || null,
+        isDuplicate: Boolean(result.isDuplicate),
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     // Return the clean response payload matching firmware expectations
     return res.status(statusCode).json({
       success: result.success,

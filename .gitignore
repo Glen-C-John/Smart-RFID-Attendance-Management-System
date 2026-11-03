@@ -4,6 +4,9 @@ node_modules/
 *.log
 backend/node_modules/
 backend/.env
+frontend/node_modules/
+frontend/dist/
+frontend/.env
 build/
 .cache/
 backend/data/db/

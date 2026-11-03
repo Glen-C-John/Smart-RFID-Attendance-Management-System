@@ -8,7 +8,7 @@ router.use(requireAdminAuth);
 router.post('/register', deviceController.registerDevice);
 router.get('/', deviceController.getDevices);
 router.get('/:deviceId', deviceController.getDeviceById);
+router.put('/:deviceId', deviceController.updateDevice);
 router.put('/:deviceId/status', deviceController.updateDeviceStatus);
 
 module.exports = router;
-

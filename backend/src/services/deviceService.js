@@ -40,6 +40,26 @@ class DeviceService {
     return device;
   }
 
+  async updateDevice(deviceId, data) {
+    const allowed = {};
+    if (data.deviceName) allowed.deviceName = data.deviceName.trim();
+    if (data.location) allowed.location = data.location.trim();
+    if (data.status) allowed.status = data.status;
+    if (data.firmwareVersion) allowed.firmwareVersion = data.firmwareVersion;
+
+    const device = await Device.findOneAndUpdate(
+      { deviceId },
+      allowed,
+      { returnDocument: 'after' }
+    );
+    if (!device) {
+      const err = new Error(`Device '${deviceId}' not found`);
+      err.statusCode = 404;
+      throw err;
+    }
+    return device;
+  }
+
   async updateDeviceStatus(deviceId, status) {
     const device = await Device.findOneAndUpdate(
       { deviceId },

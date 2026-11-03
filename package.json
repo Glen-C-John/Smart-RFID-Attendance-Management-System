@@ -1,0 +1,27 @@
+{
+  "name": "rfid-attendance-system",
+  "version": "2.0.0",
+  "description": "Smart RFID Attendance Management System with ESP8266, Node.js, Express, MongoDB, and React Admin Dashboard",
+  "private": true,
+  "scripts": {
+    "start:backend": "cd backend && npm start",
+    "dev:backend": "cd backend && npm run dev",
+    "start:frontend": "cd frontend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "test": "cd backend && npm test",
+    "migrate": "cd backend && npm run migrate",
+    "migrate:dry": "cd backend && npm run migrate:dry"
+  },
+  "keywords": [
+    "rfid",
+    "esp8266",
+    "iot",
+    "attendance",
+    "mongodb",
+    "react",
+    "tailwind",
+    "mfrc522"
+  ],
+  "author": "",
+  "license": "ISC"
+}

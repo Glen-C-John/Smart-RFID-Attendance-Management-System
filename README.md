@@ -1,8 +1,6 @@
-# Smart RFID Attendance Management System — Phase 1
+# Smart RFID Attendance Management System (Phases 1 & 2)
 
-An enterprise IoT-based attendance system combining an **ESP8266 (NodeMCU)** microcontroller, **MFRC522 RFID reader**, and a **Node.js/Express REST backend with MongoDB**.
-
-This project upgrades a legacy Google Sheets logging sketch into a reliable, database-driven attendance system with offline queuing, duplicate prevention, and automated migration.
+An enterprise IoT-based attendance solution combining an **ESP8266 (NodeMCU)** microcontroller, **MFRC522 RFID reader**, **Node.js/Express REST backend with MongoDB**, and a **React + Tailwind CSS Admin Dashboard** with real-time Socket.IO streaming.
 
 ---
 
@@ -12,23 +10,33 @@ This project upgrades a legacy Google Sheets logging sketch into a reliable, dat
                                       +------------------------------------+
                                       |          MongoDB Database          |
                                       |  (Students, Cards, Attendance,     |
-                                      |            Devices)                |
+                                      |       Devices, Settings)           |
                                       +-----------------+------------------+
                                                         |
-                                                  Mongoose ORM
+                                                   Mongoose ORM
                                                         |
 +--------------------------+          HTTP / HTTPS      v
 |     ESP8266 NodeMCU      | -------------------> +------------------------+
 |  + MFRC522 RFID Reader   |    POST /device/scan |  Node.js + Express API |
-|  + Flash Offline Queue   |                      | (Asia/Kolkata Timezone)|
-+--------------------------+                      +------------------------+
+|  + LittleFS Offline Queue|                      |  Port: 5001            |
++--------------------------+                      +-----------+------------+
+                                                              |
+                                                      Socket.IO Events &
+                                                          REST API
+                                                              |
+                                                              v
+                                                  +------------------------+
+                                                  |   React 18 Admin App   |
+                                                  |  (Tailwind + Recharts) |
+                                                  |   Port: 3000           |
+                                                  +------------------------+
 ```
 
 ---
 
-## 1. Hardware Setup (Preserved Existing Wiring)
+## 1. Hardware Pinout (NodeMCU ESP8266 + MFRC522)
 
-The existing pin connections and RFID card data are **100% preserved**.
+The existing wiring and RFID card data are **100% preserved**.
 
 | ESP8266 NodeMCU Pin | Peripheral | Description |
 |---|---|---|
@@ -41,147 +49,123 @@ The existing pin connections and RFID card data are **100% preserved**.
 | **3V3** | MFRC522 `3.3V` | Power (Do NOT connect MFRC522 to 5V!) |
 | **GND** | MFRC522 / Buzzer `GND` | Common Ground |
 
-> **IMPORTANT:** Existing RFID tags with names written into Sector 0, Block 2 (e.g. "Mani") are **not erased or overwritten**. The new firmware reads both the unique 4-byte Card UID and Block 2 data.
+> **IMPORTANT:** Existing RFID tags with names written into Sector 0, Block 2 (e.g. "Mani") are **not overwritten or erased**. The firmware reads both the unique 4-byte Card UID and Block 2 data.
 
 ---
 
-## 2. Audio Feedback Signals
+## 2. Firmware Features (`firmware/esp8266_rfid_node/`)
 
-The buzzer connected to pin **D8** signals real-time status:
-
-- **2 Short Beeps (200ms):** Attendance successfully recorded or check-out confirmed.
-- **1 Short Chirp (80ms):** Duplicate scan within cooldown window (ignored).
-- **3 Rapid Beeps (70ms each):** Network offline; scan event safely saved to local flash memory.
-- **1 Long Buzz (800ms):** Unregistered card, blocked card, or device authentication error.
+- **Dual Identifier Acquisition:** Reads UID + Sector 0 Block 2 ASCII payload.
+- **NTP Time Synchronization:** Accurate timestamping with fallback.
+- **LittleFS Offline Storage:** Queues scans when Wi-Fi is down; flushes automatically when connection recovers.
+- **Debounce & Cooldown:** Prevents accidental double scans.
+- **Audio Feedback Signals:**
+  - 2 Short Beeps (200ms): Scan successfully recorded.
+  - 1 Short Chirp (80ms): Duplicate scan within cooldown window (ignored).
+  - 3 Rapid Beeps (70ms): Network offline; scan cached safely to flash memory.
+  - 1 Long Buzz (800ms): Unregistered card or authentication error.
 
 ---
 
-## 3. Backend Setup & Configuration
+## 3. Quick Start Guide
 
 ### Prerequisites
 - Node.js (v18+)
-- MongoDB (Local or MongoDB Atlas)
+- MongoDB (running locally or MongoDB Atlas URI)
+- Arduino CLI or Arduino IDE (for ESP8266 flashing)
 
 ### Installation
+From the root directory, install dependencies for both backend and frontend:
 ```bash
+# Backend dependencies
+cd backend && npm install
+
+# Frontend dependencies
+cd ../frontend && npm install
+cd ..
+```
+
+### Start Local MongoDB (if running locally)
+```bash
+mongod --dbpath backend/data/db --port 27017
+```
+
+### Start the Applications
+
+#### Option A: Running from Project Root
+```bash
+# Terminal 1: Start Backend API (runs on http://localhost:5001)
+npm run start:backend
+
+# Terminal 2: Start React Admin Dashboard (runs on http://localhost:3000)
+npm run start:frontend
+```
+
+#### Option B: Running individually
+```bash
+# Backend:
 cd backend
-npm install
-```
-
-### Environment Configuration
-Copy `.env.example` to `.env` and configure your settings:
-```bash
-cp .env.example .env
-```
-
-Key environment variables:
-```env
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/rfid_attendance
-TIMEZONE=Asia/Kolkata
-ADMIN_API_KEY=admin_super_secret_key_change_in_production
-DEFAULT_DEVICE_ID=ESP8266_001
-DEFAULT_DEVICE_KEY=esp8266_device_secret_token_123
-
-ATTENDANCE_COOLDOWN_SECONDS=60
-CHECKOUT_MIN_INTERVAL_MINUTES=5
-WORK_DAY_START_TIME=09:00
-LATE_THRESHOLD_TIME=09:30
-ENABLE_CHECKOUT=true
-```
-
-### Start Backend Server
-```bash
-# Production mode:
 npm start
 
-# Development mode (auto-reload with nodemon):
+# Frontend:
+cd frontend
 npm run dev
 ```
 
-### Seed Initial Test Data
-```bash
-npm run seed
-```
+Open your browser to:
+👉 **`http://localhost:3000`**
 
 ---
 
-## 4. Running Automated Tests
+## 4. Default Admin Credentials
 
-A comprehensive Jest test suite verifies all 12 Phase 1 requirements using an in-memory MongoDB instance:
-
-```bash
-cd backend
-npm test
-```
-
-### Test Coverage Highlights:
-1. Registered card records attendance.
-2. Unregistered card rejected (404).
-3. Blocked card rejected (403).
-4. Duplicate scan within cooldown ignored.
-5. Offline sync & network retry idempotency (`eventId`).
-6. Preserving legacy Block 2 tag data.
-7. Google Sheets CSV migration.
-8. Migration idempotency (no duplicate records on repeated runs).
-9. Database health and disconnect handling.
-10. Device authentication verification.
-11. Asia/Kolkata date and late threshold calculations.
+- **Username:** `admin`
+- **Password:** `admin123`
+- *(Configurable in `backend/.env`)*
 
 ---
 
-## 5. Google Sheets Migration
+## 5. Phase 2 Admin Dashboard Highlights
 
-Export your existing Google Sheet as CSV, then run:
-
-```bash
-# 1. Preview changes without writing to database:
-npm run migrate -- --dry-run --file data/sample_google_sheets_export.csv
-
-# 2. Execute live import:
-npm run migrate -- --file data/sample_google_sheets_export.csv
-```
-
-Detailed migration documentation: [docs/MIGRATION_GUIDE.md](file:///Users/glenjohn/Desktop/rfid%20project/docs/MIGRATION_GUIDE.md)
-
----
-
-## 6. Flashing the ESP8266 Firmware
-
-The updated firmware is located in [firmware/esp8266_rfid_node/esp8266_rfid_node.ino](file:///Users/glenjohn/Desktop/rfid%20project/firmware/esp8266_rfid_node/esp8266_rfid_node.ino).
-
-### 1. Update Network Settings
-Open `esp8266_rfid_node.ino` and configure:
-```cpp
-#define WIFI_SSID        "Your_WiFi_SSID"
-#define WIFI_PASSWORD    "Your_WiFi_Password"
-#define BACKEND_SCAN_URL "http://<YOUR_COMPUTER_IP>:5000/api/v1/device/scan"
-```
-
-### 2. Compile Sketch
-```bash
-arduino-cli compile --fqbn esp8266:esp8266:nodemcuv2 firmware/esp8266_rfid_node
-```
-
-### 3. Upload to NodeMCU
-Plug your board via USB and upload:
-```bash
-# Find connected serial port:
-arduino-cli board list
-
-# Flash firmware:
-arduino-cli upload -p /dev/cu.usbserial-XXXX --fqbn esp8266:esp8266:nodemcuv2 firmware/esp8266_rfid_node
-```
-
-### 4. Serial Monitor
-```bash
-arduino-cli monitor -p /dev/cu.usbserial-XXXX -c baudrate=9600
-```
+1. **Executive Dashboard (`/`):**
+   - 8 live KPI summary cards (Total Students, Present Today, Absent, Late, Percentage, Active Cards, Online Devices).
+   - Real-time weekly attendance trend charts (Recharts AreaChart).
+   - Status distribution donut chart (Present vs Late vs Absent).
+   - Live RFID scan activity stream.
+2. **Student Management (`/students` & `/students/:id`):**
+   - Paginated searchable student directory with class and status filters.
+   - Comprehensive detail modal & page with assigned RFID tags, attendance percentages, and chronological timeline.
+   - Student registration modal with real-time validation.
+3. **RFID Card Management (`/cards`):**
+   - Track and manage RFID tags with student assignments.
+   - One-click Block/Unblock toggle to immediately revoke lost cards.
+   - Register replacement or new cards.
+4. **Attendance Monitoring & Manual Correction (`/attendance`):**
+   - Comprehensive filter by preset dates, custom range, student ID, class, and attendance status.
+   - **Manual Attendance Correction Modal:** Allows administrators to correct statuses and timestamps with mandatory audit reason logging.
+   - Complete audit trail modal showing who modified a record, previous state, and reason.
+5. **Hardware Device Management (`/devices`):**
+   - Monitor online/offline status of all ESP8266 readers based on heartbeat intervals.
+   - Authorize new readers and regenerate secret tokens.
+6. **Reports & Exports (`/reports`):**
+   - Aggregate daily, weekly, monthly, class-wise, or student-specific metrics.
+   - One-click **Export to CSV**.
+   - One-click **Export to PDF** with formatted headers, KPI summaries, and styled tables (`jspdf` + `jspdf-autotable`).
+7. **System Settings (`/settings`):**
+   - Configure institution name, workday start time, late arrival cutoffs, debounce cooldowns, and operational timezone (`Asia/Kolkata`).
+   - Dynamic in-memory configuration updates without restarting the server.
+8. **Real-Time Streaming (Socket.IO):**
+   - Live scan notifications instantly surface toast alerts on the dashboard whenever an RFID card is swiped at any ESP8266 reader.
 
 ---
 
-## 7. API Documentation
+## 6. Running Automated Tests
 
-Detailed REST API specifications, payload schemas, and error codes are documented in:
-[docs/API_DOCUMENTATION.md](file:///Users/glenjohn/Desktop/rfid%20project/docs/API_DOCUMENTATION.md)
+Run the backend test suite covering device authentication, card validation, attendance cooldown, duplicate prevention, admin CRUD, Google Sheets migration idempotency, and Phase 2 endpoints:
+```bash
+npm run test
+# Or:
+cd backend && npm test
+```
 
+All 21 integration tests pass.

@@ -1,29 +1,49 @@
+const jwt = require('jsonwebtoken');
 const config = require('../config');
 const { errorResponse } = require('../utils/response');
 
 /**
  * Middleware to authenticate administrative requests.
- * Expects 'x-admin-key' header or 'Authorization: Bearer <key>'.
+ * Supports:
+ *  1. JWT Bearer token in 'Authorization: Bearer <token>'
+ *  2. API Key in 'x-admin-key' header or 'Authorization: Bearer <apiKey>'
  */
 const requireAdminAuth = (req, res, next) => {
   const headerKey = req.headers['x-admin-key'];
   const authHeader = req.headers['authorization'];
-  
-  let bearerKey = null;
+
+  // Direct API Key via custom header
+  if (headerKey && headerKey === config.adminApiKey) {
+    req.user = { username: config.adminUsername, role: 'admin' };
+    return next();
+  }
+
+  // Authorization header check
+  let token = null;
   if (authHeader && authHeader.startsWith('Bearer ')) {
-    bearerKey = authHeader.substring(7).trim();
+    token = authHeader.substring(7).trim();
   }
 
-  const providedKey = headerKey || bearerKey;
+  if (token) {
+    // If bearer token matches admin API key directly
+    if (token === config.adminApiKey) {
+      req.user = { username: config.adminUsername, role: 'admin' };
+      return next();
+    }
 
-  if (!providedKey || providedKey !== config.adminApiKey) {
-    return errorResponse(res, 'Unauthorized: Invalid or missing administrative API key', 401);
+    // Verify JWT
+    try {
+      const decoded = jwt.verify(token, config.jwtSecret);
+      req.user = decoded;
+      return next();
+    } catch (err) {
+      return errorResponse(res, 'Unauthorized: Invalid or expired token', 401);
+    }
   }
 
-  next();
+  return errorResponse(res, 'Unauthorized: Invalid or missing administrative credentials', 401);
 };
 
 module.exports = {
   requireAdminAuth,
 };
-

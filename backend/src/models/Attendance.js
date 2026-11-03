@@ -1,5 +1,34 @@
 const mongoose = require('mongoose');
 
+const auditLogSchema = new mongoose.Schema(
+  {
+    modifiedBy: {
+      type: String,
+      default: 'admin',
+    },
+    action: {
+      type: String,
+      default: 'manual_correction',
+    },
+    previousValues: {
+      type: mongoose.Schema.Types.Mixed,
+    },
+    newValues: {
+      type: mongoose.Schema.Types.Mixed,
+    },
+    reason: {
+      type: String,
+      required: [true, 'Modification reason is required'],
+      trim: true,
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false }
+);
+
 const attendanceSchema = new mongoose.Schema(
   {
     studentId: {
@@ -50,15 +79,15 @@ const attendanceSchema = new mongoose.Schema(
       unique: true,
       description: 'Client-generated UUID for offline sync idempotency',
     },
+    auditLog: [auditLogSchema],
   },
   {
     timestamps: true,
   }
 );
 
-// One attendance record per student per day (prevents duplicate sessions while supporting checkIn and checkOut)
+// One attendance record per student per day
 attendanceSchema.index({ studentId: 1, attendanceDate: 1 }, { unique: true });
 attendanceSchema.index({ attendanceDate: 1, status: 1 });
 
 module.exports = mongoose.model('Attendance', attendanceSchema);
-

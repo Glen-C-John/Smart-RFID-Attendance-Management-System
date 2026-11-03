@@ -7,8 +7,8 @@ router.use(requireAdminAuth);
 
 router.get('/', attendanceController.getAttendance);
 router.get('/:id', attendanceController.getAttendanceById);
+router.patch('/:id', attendanceController.correctAttendance);
 router.get('/student/:studentId', attendanceController.getAttendanceByStudent);
 router.get('/date/:date', attendanceController.getAttendanceByDate);
 
 module.exports = router;
-
