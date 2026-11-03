@@ -1,8 +1,11 @@
+const { DateTime } = require('luxon');
 const Attendance = require('../models/Attendance');
 const Student = require('../models/Student');
 const Device = require('../models/Device');
 const { nowInTimezone, formatTimeDisplay } = require('../utils/timezone');
 const { successResponse, errorResponse } = require('../utils/response');
+
+const MAX_REPORT_RECORDS = 5000;
 
 const generateReport = async (req, res, next) => {
   try {
@@ -38,7 +41,10 @@ const generateReport = async (req, res, next) => {
     }
 
     const [rawRecords, totalActiveStudents] = await Promise.all([
-      Attendance.find(attendanceFilter).sort({ attendanceDate: -1, checkInTime: -1 }).lean(),
+      Attendance.find(attendanceFilter)
+        .sort({ attendanceDate: -1, checkInTime: -1 })
+        .limit(MAX_REPORT_RECORDS)
+        .lean(),
       Student.countDocuments(className ? { className, status: 'active' } : { status: 'active' }),
     ]);
 
@@ -74,18 +80,31 @@ const generateReport = async (req, res, next) => {
     const lateSessions = records.filter((r) => r.status === 'late').length;
     const onTimeSessions = records.filter((r) => r.status === 'present').length;
 
+    // Calculate calendar days in period for accurate attendance rate
+    const startDt = DateTime.fromISO(queryStartDate);
+    const endDt = DateTime.fromISO(queryEndDate);
+    const periodDays = Math.max(1, Math.round(endDt.diff(startDt, 'days').days) + 1);
+    const targetStudents = studentId ? 1 : totalActiveStudents;
+    const maxPossibleSessions = targetStudents * periodDays;
+    const attendanceRate = maxPossibleSessions > 0
+      ? Math.min(100, Math.round((presentSessions / maxPossibleSessions) * 100))
+      : 0;
+
     const summary = {
       reportType: type,
       period: {
         startDate: queryStartDate,
         endDate: queryEndDate,
+        days: periodDays,
       },
       totalActiveStudents,
       totalSessions,
       presentSessions,
       onTimeSessions,
       lateSessions,
-      attendanceRate: totalActiveStudents > 0 ? Math.round((presentSessions / (totalActiveStudents * (totalSessions > 0 ? 1 : 0) || 1)) * 100) : 0,
+      attendanceRate,
+      recordLimit: MAX_REPORT_RECORDS,
+      isTruncated: rawRecords.length === MAX_REPORT_RECORDS,
       generatedAt: now.toISO(),
     };
 

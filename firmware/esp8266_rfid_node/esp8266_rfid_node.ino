@@ -384,10 +384,6 @@ void setup() {
 // 10. MAIN EVENT LOOP
 // ==========================================
 void loop() {
-  // Always lock SPI frequency to 1MHz and keep MFRC522 active
-  SPI.setFrequency(1000000);
-  mfrc522.PCD_Init();
-
   // Periodically check and flush pending offline scan events
   if (millis() - lastQueueFlushMillis > QUEUE_FLUSH_INTERVAL) {
     lastQueueFlushMillis = millis();

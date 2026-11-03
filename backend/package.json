@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "db:start": "mkdir -p data/db && /Users/glenjohn/.cache/mongodb-binaries/mongod-arm64-darwin-7.0.14 --dbpath data/db --bind_ip 127.0.0.1 --port 27017 --fork --logpath data/db/mongod.log",
-    "db:stop": "/Users/glenjohn/.cache/mongodb-binaries/mongod-arm64-darwin-7.0.14 --dbpath data/db --shutdown || true",
+    "db:start": "mkdir -p data/db && (mongod --dbpath data/db --bind_ip 127.0.0.1 --port 27017 --fork --logpath data/db/mongod.log 2>/dev/null || $HOME/.cache/mongodb-binaries/mongod* --dbpath data/db --bind_ip 127.0.0.1 --port 27017 --fork --logpath data/db/mongod.log)",
+    "db:stop": "(mongod --dbpath data/db --shutdown 2>/dev/null || $HOME/.cache/mongodb-binaries/mongod* --dbpath data/db --shutdown) 2>/dev/null || true",
     "test": "node --experimental-vm-modules node_modules/.bin/jest --runInBand --detectOpenHandles --forceExit",
     "migrate": "node src/scripts/migrateGoogleSheets.js",
     "seed": "node src/scripts/seedData.js"
@@ -23,7 +23,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "csv-parser": "^3.2.1",
     "dotenv": "^18.0.9",
@@ -33,8 +32,7 @@
     "luxon": "^3.7.2",
     "mongoose": "^9.11.4",
     "morgan": "^1.12.1",
-    "socket.io": "^4.8.4",
-    "uuid": "^14.0.3"
+    "socket.io": "^4.8.4"
   },
   "devDependencies": {
     "jest": "^30.5.2",
