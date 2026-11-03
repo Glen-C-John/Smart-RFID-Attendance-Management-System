@@ -33,9 +33,9 @@
 #define WIFI_SSID       "Asus"
 #define WIFI_PASSWORD   "11418719"
 
-// Backend API URL (Replace with your computer's local IP or production domain)
-// Example: "http://192.168.1.100:5000/api/v1/device/scan"
-#define BACKEND_SCAN_URL "http://192.168.1.100:5000/api/v1/device/scan"
+// Backend API URL (Replace with your computer's local IP on port 5001)
+// Your Mac local IP is currently: 192.168.50.166
+#define BACKEND_SCAN_URL "http://192.168.50.166:5001/api/v1/device/scan"
 
 // Device Authentication Credentials
 #define DEVICE_ID        "ESP8266_001"
