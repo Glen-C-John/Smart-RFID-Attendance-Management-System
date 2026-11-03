@@ -1,0 +1,212 @@
+{
+  "students": [
+    {
+      "_id": "6ae9ebbc484629a2bfd8c3b8",
+      "studentId": "STU001",
+      "name": "Mani",
+      "email": null,
+      "phone": null,
+      "className": "CSE-A",
+      "department": null,
+      "status": "active",
+      "createdAt": "2026-11-03T14:12:12.850Z",
+      "updatedAt": "2026-11-03T19:41:04.475Z",
+      "__v": 0
+    },
+    {
+      "_id": "6ae9ebbc484629a2bfd8c3bb",
+      "studentId": "STU002",
+      "name": "Rugved",
+      "email": null,
+      "phone": null,
+      "className": "CSE-A",
+      "department": null,
+      "status": "active",
+      "createdAt": "2026-11-03T14:12:12.955Z",
+      "updatedAt": "2026-11-03T19:41:04.485Z",
+      "__v": 0
+    },
+    {
+      "_id": "6ae9ebbc484629a2bfd8c3be",
+      "studentId": "STU003",
+      "name": "Glen",
+      "email": null,
+      "phone": null,
+      "className": "CSE-B",
+      "department": null,
+      "status": "active",
+      "createdAt": "2026-11-03T14:12:12.996Z",
+      "updatedAt": "2026-11-03T19:41:04.485Z",
+      "__v": 0
+    },
+    {
+      "_id": "6ae9ebbd484629a2bfd8c3c3",
+      "studentId": "STU004",
+      "name": "Shivam",
+      "email": null,
+      "phone": null,
+      "className": "CSE-B",
+      "department": null,
+      "status": "active",
+      "createdAt": "2026-11-03T14:12:13.002Z",
+      "updatedAt": "2026-11-03T19:41:04.486Z",
+      "__v": 0
+    }
+  ],
+  "rfidcards": [
+    {
+      "_id": "6aea38d017e32a02071e847c",
+      "cardUid": "17:A7:17:98",
+      "studentId": "STU001",
+      "storedTagData": "Mani",
+      "status": "active",
+      "registeredAt": "2026-11-03T19:41:04.467Z",
+      "createdAt": "2026-11-03T19:41:04.469Z",
+      "updatedAt": "2026-11-03T19:41:04.469Z",
+      "__v": 0
+    },
+    {
+      "_id": "6aea38d017e32a02071e847d",
+      "cardUid": "46:26:F3:06",
+      "studentId": "STU002",
+      "storedTagData": "Rugved",
+      "status": "active",
+      "registeredAt": "2026-11-03T19:41:04.467Z",
+      "createdAt": "2026-11-03T19:41:04.473Z",
+      "updatedAt": "2026-11-03T19:41:04.473Z",
+      "__v": 0
+    },
+    {
+      "_id": "6aea38d017e32a02071e847e",
+      "cardUid": "02:96:64:06",
+      "studentId": "STU003",
+      "storedTagData": "Glen",
+      "status": "active",
+      "registeredAt": "2026-11-03T19:41:04.467Z",
+      "createdAt": "2026-11-03T19:41:04.474Z",
+      "updatedAt": "2026-11-03T19:41:04.474Z",
+      "__v": 0
+    },
+    {
+      "_id": "6aea38d017e32a02071e847f",
+      "cardUid": "27:CD:B6:98",
+      "studentId": "STU004",
+      "storedTagData": "Shivam",
+      "status": "active",
+      "registeredAt": "2026-11-03T19:41:04.467Z",
+      "createdAt": "2026-11-03T19:41:04.474Z",
+      "updatedAt": "2026-11-03T19:41:04.474Z",
+      "__v": 0
+    }
+  ],
+  "attendances": [
+    {
+      "_id": "6ae9ebbc484629a2bfd8c3ba",
+      "studentId": "STU001",
+      "cardUid": "A1:B2:C3:D4",
+      "deviceId": "ESP8266_MIGRATION",
+      "attendanceDate": "2026-11-01",
+      "checkInTime": "2026-11-01T03:25:00.000Z",
+      "checkOutTime": null,
+      "status": "present",
+      "createdAt": "2026-11-03T14:12:12.949Z",
+      "updatedAt": "2026-11-03T14:12:12.949Z",
+      "__v": 0
+    },
+    {
+      "_id": "6ae9ebbc484629a2bfd8c3bd",
+      "studentId": "STU002",
+      "cardUid": "E5:F6:A7:B8",
+      "deviceId": "ESP8266_MIGRATION",
+      "attendanceDate": "2026-11-01",
+      "checkInTime": "2026-11-01T03:45:00.000Z",
+      "checkOutTime": null,
+      "status": "present",
+      "createdAt": "2026-11-03T14:12:12.995Z",
+      "updatedAt": "2026-11-03T14:12:12.995Z",
+      "__v": 0
+    },
+    {
+      "_id": "6ae9ebbc484629a2bfd8c3c0",
+      "studentId": "STU003",
+      "cardUid": "11:22:33:44",
+      "deviceId": "ESP8266_MIGRATION",
+      "attendanceDate": "2026-11-01",
+      "checkInTime": "2026-11-01T04:15:00.000Z",
+      "checkOutTime": null,
+      "status": "late",
+      "createdAt": "2026-11-03T14:12:12.998Z",
+      "updatedAt": "2026-11-03T14:12:12.998Z",
+      "__v": 0
+    },
+    {
+      "_id": "6ae9ebbd484629a2bfd8c3c1",
+      "studentId": "STU001",
+      "cardUid": "A1:B2:C3:D4",
+      "deviceId": "ESP8266_MIGRATION",
+      "attendanceDate": "2026-11-02",
+      "checkInTime": "2026-11-02T03:20:00.000Z",
+      "checkOutTime": null,
+      "status": "present",
+      "createdAt": "2026-11-03T14:12:13.000Z",
+      "updatedAt": "2026-11-03T14:12:13.000Z",
+      "__v": 0
+    },
+    {
+      "_id": "6ae9ebbd484629a2bfd8c3c2",
+      "studentId": "STU002",
+      "cardUid": "E5:F6:A7:B8",
+      "deviceId": "ESP8266_MIGRATION",
+      "attendanceDate": "2026-11-02",
+      "checkInTime": "2026-11-02T04:05:00.000Z",
+      "checkOutTime": null,
+      "status": "late",
+      "createdAt": "2026-11-03T14:12:13.001Z",
+      "updatedAt": "2026-11-03T14:12:13.001Z",
+      "__v": 0
+    },
+    {
+      "_id": "6ae9ebbd484629a2bfd8c3c5",
+      "studentId": "STU004",
+      "cardUid": "55:66:77:88",
+      "deviceId": "ESP8266_MIGRATION",
+      "attendanceDate": "2026-11-02",
+      "checkInTime": "2026-11-02T03:35:00.000Z",
+      "checkOutTime": null,
+      "status": "present",
+      "createdAt": "2026-11-03T14:12:13.003Z",
+      "updatedAt": "2026-11-03T14:12:13.003Z",
+      "__v": 0
+    },
+    {
+      "_id": "6ae9ebbd484629a2bfd8c3c6",
+      "studentId": "STU001",
+      "cardUid": "A1:B2:C3:D4",
+      "deviceId": "ESP8266_MIGRATION",
+      "attendanceDate": "2026-11-03",
+      "checkInTime": "2026-11-03T03:30:00.000Z",
+      "checkOutTime": null,
+      "status": "present",
+      "createdAt": "2026-11-03T14:12:13.006Z",
+      "updatedAt": "2026-11-03T14:12:13.006Z",
+      "__v": 0
+    }
+  ],
+  "devices": [],
+  "settings": [
+    {
+      "_id": "6ae9f416e857b88fd5d9ac7f",
+      "institutionName": "Smart IoT Institute of Technology",
+      "workDayStartTime": "09:00",
+      "lateThresholdTime": "09:30",
+      "cooldownSeconds": 60,
+      "checkoutMinIntervalMinutes": 5,
+      "enableCheckout": true,
+      "timezone": "Asia/Kolkata",
+      "deviceHeartbeatThresholdSeconds": 180,
+      "createdAt": "2026-11-03T14:47:50.795Z",
+      "updatedAt": "2026-11-03T14:47:50.795Z",
+      "__v": 0
+    }
+  ]
+}
