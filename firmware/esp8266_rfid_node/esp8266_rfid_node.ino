@@ -29,17 +29,15 @@
 // ==========================================
 // 2. NETWORK & BACKEND CONFIGURATION
 // ==========================================
-// Change to your local Wi-Fi credentials
-#define WIFI_SSID       "Glen 5G"
-#define WIFI_PASSWORD   "9769011326"
+#if __has_include("secrets.h")
+  #include "secrets.h"
+#else
+  #include "secrets.example.h"
+#endif
 
-// Backend API URL (Your Mac local IP is 192.168.29.235 on port 5001)
-#define BACKEND_SCAN_URL "http://192.168.29.235:5001/api/v1/device/scan"
-
-// Device Authentication Credentials
-#define DEVICE_ID        "ESP8266_001"
-#define DEVICE_KEY       "esp8266_device_secret_token_123"
-#define FIRMWARE_VERSION "2.0.0"
+#ifndef FIRMWARE_VERSION
+  #define FIRMWARE_VERSION "2.0.0"
+#endif
 
 // Local Scan Cooldown (milliseconds) to prevent immediate duplicate card reads
 #define LOCAL_COOLDOWN_MS 4000

@@ -21,7 +21,7 @@
     "mongodb"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "cors": "^2.8.6",
     "csv-parser": "^3.2.1",

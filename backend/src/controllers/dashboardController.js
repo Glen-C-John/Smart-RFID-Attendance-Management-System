@@ -66,7 +66,39 @@ const getTrends = async (req, res, next) => {
   try {
     const days = parseInt(req.query.days, 10) || 7;
     const now = nowInTimezone();
-    const totalActiveStudents = await Student.countDocuments({ status: 'active' });
+    const startDate = now.minus({ days: days - 1 }).toFormat('yyyy-MM-dd');
+    const endDate = now.toFormat('yyyy-MM-dd');
+
+    const [totalActiveStudents, aggregatedRecords] = await Promise.all([
+      Student.countDocuments({ status: 'active' }),
+      Attendance.aggregate([
+        {
+          $match: {
+            attendanceDate: { $gte: startDate, $lte: endDate },
+          },
+        },
+        {
+          $group: {
+            _id: { date: '$attendanceDate', status: '$status' },
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+    ]);
+
+    // Build lookup map from single aggregation result
+    const countsByDate = {};
+    aggregatedRecords.forEach((item) => {
+      const date = item._id.date;
+      const status = item._id.status;
+      if (!countsByDate[date]) countsByDate[date] = { present: 0, late: 0 };
+      if (status === 'present' || status === 'late' || status === 'half_day') {
+        countsByDate[date].present += item.count;
+      }
+      if (status === 'late') {
+        countsByDate[date].late += item.count;
+      }
+    });
 
     const trends = [];
     for (let i = days - 1; i >= 0; i--) {
@@ -74,17 +106,9 @@ const getTrends = async (req, res, next) => {
       const dateStr = dt.toFormat('yyyy-MM-dd');
       const dayName = dt.toFormat('ccc'); // Mon, Tue, etc.
 
-      const [present, late] = await Promise.all([
-        Attendance.countDocuments({
-          attendanceDate: dateStr,
-          status: { $in: ['present', 'late', 'half_day'] },
-        }),
-        Attendance.countDocuments({
-          attendanceDate: dateStr,
-          status: 'late',
-        }),
-      ]);
-
+      const dayCounts = countsByDate[dateStr] || { present: 0, late: 0 };
+      const present = dayCounts.present;
+      const late = dayCounts.late;
       const onTime = Math.max(0, present - late);
       const absent = Math.max(0, totalActiveStudents - present);
 
@@ -140,35 +164,38 @@ const getClassComparison = async (req, res, next) => {
   try {
     const todayStr = getAttendanceDateString();
 
-    const students = await Student.find({ status: 'active' }, 'className studentId');
+    const [students, todayRecords] = await Promise.all([
+      Student.find({ status: 'active' }, 'className studentId').lean(),
+      Attendance.find({
+        attendanceDate: todayStr,
+        status: { $in: ['present', 'late', 'half_day'] },
+      }, 'studentId').lean(),
+    ]);
+
+    const presentSet = new Set(todayRecords.map((r) => r.studentId));
     const classesMap = {};
 
     students.forEach((s) => {
       const cls = s.className || 'General';
       if (!classesMap[cls]) {
-        classesMap[cls] = { total: 0, studentIds: [] };
+        classesMap[cls] = { total: 0, presentCount: 0 };
       }
       classesMap[cls].total++;
-      classesMap[cls].studentIds.push(s.studentId);
+      if (presentSet.has(s.studentId)) {
+        classesMap[cls].presentCount++;
+      }
     });
 
-    const comparison = [];
-    for (const [className, data] of Object.entries(classesMap)) {
-      const presentCount = await Attendance.countDocuments({
-        attendanceDate: todayStr,
-        studentId: { $in: data.studentIds },
-        status: { $in: ['present', 'late', 'half_day'] },
-      });
-
-      const percentage = data.total > 0 ? Math.round((presentCount / data.total) * 100) : 0;
-      comparison.push({
+    const comparison = Object.entries(classesMap).map(([className, data]) => {
+      const percentage = data.total > 0 ? Math.round((data.presentCount / data.total) * 100) : 0;
+      return {
         className,
         totalStudents: data.total,
-        presentCount,
-        absentCount: data.total - presentCount,
+        presentCount: data.presentCount,
+        absentCount: Math.max(0, data.total - data.presentCount),
         percentage,
-      });
-    }
+      };
+    });
 
     return successResponse(res, { comparison });
   } catch (error) {

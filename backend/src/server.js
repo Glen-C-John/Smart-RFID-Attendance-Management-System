@@ -47,6 +47,20 @@ const startServer = async () => {
   try {
     await connectDB();
 
+    // Hydrate runtime config from persisted MongoDB settings if available
+    const Setting = require('./models/Setting');
+    const saved = await Setting.findOne();
+    if (saved) {
+      if (saved.workDayStartTime) config.attendance.workDayStartTime = saved.workDayStartTime;
+      if (saved.lateThresholdTime) config.attendance.lateThresholdTime = saved.lateThresholdTime;
+      if (saved.cooldownSeconds) config.attendance.cooldownSeconds = saved.cooldownSeconds;
+      if (saved.checkoutMinIntervalMinutes) config.attendance.checkoutMinIntervalMinutes = saved.checkoutMinIntervalMinutes;
+      if (saved.enableCheckout !== undefined) config.attendance.enableCheckout = saved.enableCheckout;
+      if (saved.timezone) config.timezone = saved.timezone;
+      if (saved.deviceHeartbeatThresholdSeconds) config.deviceHeartbeatThresholdSeconds = saved.deviceHeartbeatThresholdSeconds;
+      console.log(`[Config] Loaded persisted institution settings (${saved.institutionName})`);
+    }
+
     server.listen(config.port, '0.0.0.0', () => {
       console.log(`====================================================`);
       console.log(`  RFID Attendance Backend API & Socket Server       `);

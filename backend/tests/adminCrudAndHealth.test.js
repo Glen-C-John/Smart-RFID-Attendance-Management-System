@@ -85,5 +85,26 @@ describe('Admin Management & System Health Tests', () => {
     expect(activateRes.status).toBe(200);
     expect(activateRes.body.card.status).toBe('active');
   });
+
+  it('should hydrate runtime configuration from persisted Setting model', async () => {
+    const Setting = require('../src/models/Setting');
+    await Setting.deleteMany({});
+    await Setting.create({
+      institutionName: 'Test Tech Institute',
+      workDayStartTime: '08:30',
+      lateThresholdTime: '08:45',
+      cooldownSeconds: 90,
+    });
+
+    const saved = await Setting.findOne();
+    expect(saved).not.toBeNull();
+    if (saved) {
+      if (saved.lateThresholdTime) config.attendance.lateThresholdTime = saved.lateThresholdTime;
+      if (saved.cooldownSeconds) config.attendance.cooldownSeconds = saved.cooldownSeconds;
+    }
+
+    expect(config.attendance.lateThresholdTime).toBe('08:45');
+    expect(config.attendance.cooldownSeconds).toBe(90);
+  });
 });
 

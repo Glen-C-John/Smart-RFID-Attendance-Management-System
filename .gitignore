@@ -12,3 +12,5 @@ build/
 backend/data/db/
 *.wt
 *.bson
+secrets.h
+firmware/**/secrets.h
