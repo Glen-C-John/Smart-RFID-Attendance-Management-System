@@ -4,7 +4,16 @@ const Attendance = require('../models/Attendance');
 
 class StudentService {
   async createStudent(data) {
-    const studentId = data.studentId.trim().toUpperCase();
+    const studentId = (data.studentId || '').trim().toUpperCase();
+    const name = (data.name || '').trim();
+    const className = (data.className || '').trim();
+
+    if (!studentId || !name || !className) {
+      const err = new Error('studentId, name, and className cannot be empty');
+      err.statusCode = 400;
+      throw err;
+    }
+
     const existing = await Student.findOne({ studentId });
     if (existing) {
       const err = new Error(`Student with ID '${studentId}' already exists`);
@@ -14,6 +23,11 @@ class StudentService {
     return Student.create({
       ...data,
       studentId,
+      name,
+      className,
+      email: data.email ? data.email.trim() : null,
+      phone: data.phone ? data.phone.trim() : null,
+      department: data.department ? data.department.trim() : null,
     });
   }
 
@@ -22,20 +36,24 @@ class StudentService {
     if (query.className) filter.className = query.className;
     if (query.department) filter.department = query.department;
     if (query.status) filter.status = query.status;
-    if (query.search) {
+    if (query.search && query.search.trim()) {
+      const escaped = query.search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       filter.$or = [
-        { name: { $regex: query.search, $options: 'i' } },
-        { studentId: { $regex: query.search, $options: 'i' } },
+        { name: { $regex: escaped, $options: 'i' } },
+        { studentId: { $regex: escaped, $options: 'i' } },
       ];
     }
 
-    const skip = (page - 1) * limit;
+    const safePage = Math.max(1, parseInt(page, 10) || 1);
+    const safeLimit = Math.min(500, Math.max(1, parseInt(limit, 10) || 50));
+    const skip = (safePage - 1) * safeLimit;
+
     const [students, total] = await Promise.all([
-      Student.find(filter).sort({ studentId: 1 }).skip(skip).limit(limit),
+      Student.find(filter).sort({ studentId: 1 }).skip(skip).limit(safeLimit),
       Student.countDocuments(filter),
     ]);
 
-    return { students, total, page, limit, totalPages: Math.ceil(total / limit) };
+    return { students, total, page: safePage, limit: safeLimit, totalPages: Math.ceil(total / safeLimit) };
   }
 
   async getStudentById(id) {
@@ -87,7 +105,17 @@ class StudentService {
       return { message: 'Student deactivated and associated cards blocked' };
     }
 
-    // Force delete
+    // Force delete: verify that no historical attendance records exist
+    const attendanceCount = await Attendance.countDocuments({ studentId: student.studentId });
+    if (attendanceCount > 0) {
+      const err = new Error(
+        `Cannot permanently delete student '${student.studentId}' with ${attendanceCount} existing attendance records. Deactivate student instead to preserve historical audit data.`
+      );
+      err.statusCode = 400;
+      throw err;
+    }
+
+    // Safe permanent delete when no attendance history exists
     await Student.deleteOne({ _id: student._id });
     await RfidCard.deleteMany({ studentId: student.studentId });
     return { message: 'Student and associated RFID cards permanently deleted' };

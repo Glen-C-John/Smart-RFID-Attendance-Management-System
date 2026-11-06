@@ -6,14 +6,26 @@ class CardService {
    * Register a new RFID card or assign a replacement card to a student.
    */
   async registerCard({ cardUid, studentId, storedTagData, status = 'active' }) {
+    if (!cardUid || !RfidCard.isValidUid(cardUid)) {
+      const err = new Error(`Invalid card UID format: '${cardUid}'. Must be a valid 4-byte or 7-byte hex UID.`);
+      err.statusCode = 400;
+      throw err;
+    }
+
     const normalizedUid = RfidCard.normalizeUid(cardUid);
     const upperStudentId = studentId.trim().toUpperCase();
 
-    // Verify student exists
+    // Verify student exists and is active
     const student = await Student.findOne({ studentId: upperStudentId });
     if (!student) {
       const err = new Error(`Cannot register card: Student '${upperStudentId}' does not exist`);
       err.statusCode = 404;
+      throw err;
+    }
+
+    if (student.status !== 'active') {
+      const err = new Error(`Cannot register card: Student '${upperStudentId}' is ${student.status}`);
+      err.statusCode = 400;
       throw err;
     }
 

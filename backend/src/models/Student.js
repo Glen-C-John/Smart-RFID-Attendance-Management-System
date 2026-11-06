@@ -20,6 +20,13 @@ const studentSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
       default: null,
+      validate: {
+        validator: function (v) {
+          if (!v) return true;
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+        },
+        message: 'Invalid email address format',
+      },
     },
     phone: {
       type: String,

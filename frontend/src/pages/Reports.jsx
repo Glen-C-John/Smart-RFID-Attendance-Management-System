@@ -79,6 +79,17 @@ export const Reports = () => {
     handleGenerate();
   }, [reportType]);
 
+  // Safe CSV field formatter neutralizing formula injection (CWE-1236)
+  const formatCsvField = (val) => {
+    if (val === null || val === undefined) return '""';
+    let str = String(val).trim();
+    // Neutralize spreadsheet formula triggers (=, +, -, @, tabs, CR)
+    if (/^[=+\-@\t\r]/.test(str)) {
+      str = "'" + str;
+    }
+    return `"${str.replace(/"/g, '""')}"`;
+  };
+
   // Export to CSV
   const exportToCSV = () => {
     if (!reportData || !reportData.records || reportData.records.length === 0) return;
@@ -97,16 +108,16 @@ export const Reports = () => {
     ];
 
     const rows = reportData.records.map((r) => [
-      `"${r.attendanceDate || ''}"`,
-      `"${r.studentId || ''}"`,
-      `"${r.studentName || ''}"`,
-      `"${r.className || ''}"`,
-      `"${r.department || ''}"`,
-      `"${r.checkInTime || 'N/A'}"`,
-      `"${r.checkOutTime || 'N/A'}"`,
-      `"${r.status ? r.status.toUpperCase() : ''}"`,
-      `"${r.cardUid || ''}"`,
-      `"${r.deviceName || ''}"`,
+      formatCsvField(r.attendanceDate),
+      formatCsvField(r.studentId),
+      formatCsvField(r.studentName),
+      formatCsvField(r.className),
+      formatCsvField(r.department),
+      formatCsvField(r.checkInTime || 'N/A'),
+      formatCsvField(r.checkOutTime || 'N/A'),
+      formatCsvField(r.status ? r.status.toUpperCase() : ''),
+      formatCsvField(r.cardUid),
+      formatCsvField(r.deviceName),
     ]);
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');

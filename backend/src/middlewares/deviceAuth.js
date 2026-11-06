@@ -7,8 +7,9 @@ const { errorResponse } = require('../utils/response');
  * Checks headers 'x-device-id' and 'x-device-key', or fallback to body properties.
  */
 const requireDeviceAuth = async (req, res, next) => {
-  const deviceId = req.headers['x-device-id'] || req.body.deviceId;
-  const deviceKey = req.headers['x-device-key'] || req.body.deviceKey || req.body.apiKey;
+  const body = req.body || {};
+  const deviceId = req.headers['x-device-id'] || body.deviceId;
+  const deviceKey = req.headers['x-device-key'] || body.deviceKey || body.apiKey;
 
   if (!deviceId || !deviceKey) {
     return errorResponse(
@@ -29,7 +30,7 @@ const requireDeviceAuth = async (req, res, next) => {
         apiKey: config.defaultDeviceKey,
         location: 'Main Entrance',
         status: 'active',
-        firmwareVersion: req.body.firmwareVersion || '1.0.0',
+        firmwareVersion: body.firmwareVersion || '1.0.0',
         lastSeen: new Date(),
       });
     }
@@ -48,8 +49,8 @@ const requireDeviceAuth = async (req, res, next) => {
 
     // Update last seen and firmware version asynchronously
     device.lastSeen = new Date();
-    if (req.body.firmwareVersion) {
-      device.firmwareVersion = req.body.firmwareVersion;
+    if (body.firmwareVersion) {
+      device.firmwareVersion = body.firmwareVersion;
     }
     await device.save();
 

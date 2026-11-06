@@ -27,10 +27,11 @@ const getAttendance = async (req, res, next) => {
     if (req.query.className || req.query.search) {
       const studentQuery = {};
       if (req.query.className) studentQuery.className = req.query.className;
-      if (req.query.search) {
+      if (req.query.search && req.query.search.trim()) {
+        const escaped = req.query.search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         studentQuery.$or = [
-          { name: { $regex: req.query.search, $options: 'i' } },
-          { studentId: { $regex: req.query.search, $options: 'i' } },
+          { name: { $regex: escaped, $options: 'i' } },
+          { studentId: { $regex: escaped, $options: 'i' } },
         ];
       }
       const matchedStudents = await Student.find(studentQuery, 'studentId');
@@ -111,13 +112,26 @@ const correctAttendance = async (req, res, next) => {
       status: record.status,
     };
 
+    const targetCheckIn = checkInTime ? new Date(checkInTime) : record.checkInTime;
+    const targetCheckOut = checkOutTime !== undefined ? (checkOutTime ? new Date(checkOutTime) : null) : record.checkOutTime;
+
+    if (targetCheckIn && isNaN(targetCheckIn.getTime())) {
+      return errorResponse(res, 'Invalid check-in time format', 400);
+    }
+    if (targetCheckOut && isNaN(targetCheckOut.getTime())) {
+      return errorResponse(res, 'Invalid check-out time format', 400);
+    }
+    if (targetCheckIn && targetCheckOut && targetCheckOut < targetCheckIn) {
+      return errorResponse(res, 'Check-out time cannot be earlier than check-in time', 400);
+    }
+
     const newValues = {};
     if (checkInTime) {
-      record.checkInTime = new Date(checkInTime);
+      record.checkInTime = targetCheckIn;
       newValues.checkInTime = record.checkInTime;
     }
     if (checkOutTime !== undefined) {
-      record.checkOutTime = checkOutTime ? new Date(checkOutTime) : null;
+      record.checkOutTime = targetCheckOut;
       newValues.checkOutTime = record.checkOutTime;
     }
     if (status && ['present', 'late', 'half_day', 'absent'].includes(status)) {

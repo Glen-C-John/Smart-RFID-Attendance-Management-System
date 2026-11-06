@@ -42,6 +42,23 @@ const updateSettings = async (req, res, next) => {
       deviceHeartbeatThresholdSeconds,
     } = req.body;
 
+    const timeRegex = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
+    if (workDayStartTime !== undefined && !timeRegex.test(workDayStartTime.trim())) {
+      return res.status(400).json({ success: false, message: "workDayStartTime must be in 'HH:mm' 24-hour format" });
+    }
+    if (lateThresholdTime !== undefined && !timeRegex.test(lateThresholdTime.trim())) {
+      return res.status(400).json({ success: false, message: "lateThresholdTime must be in 'HH:mm' 24-hour format" });
+    }
+    if (cooldownSeconds !== undefined && (isNaN(Number(cooldownSeconds)) || Number(cooldownSeconds) < 0)) {
+      return res.status(400).json({ success: false, message: 'cooldownSeconds must be a positive number or zero' });
+    }
+    if (checkoutMinIntervalMinutes !== undefined && (isNaN(Number(checkoutMinIntervalMinutes)) || Number(checkoutMinIntervalMinutes) < 0)) {
+      return res.status(400).json({ success: false, message: 'checkoutMinIntervalMinutes must be a positive number or zero' });
+    }
+    if (deviceHeartbeatThresholdSeconds !== undefined && (isNaN(Number(deviceHeartbeatThresholdSeconds)) || Number(deviceHeartbeatThresholdSeconds) < 10)) {
+      return res.status(400).json({ success: false, message: 'deviceHeartbeatThresholdSeconds must be at least 10 seconds' });
+    }
+
     if (institutionName !== undefined) settings.institutionName = institutionName.trim();
     if (workDayStartTime !== undefined) settings.workDayStartTime = workDayStartTime.trim();
     if (lateThresholdTime !== undefined) settings.lateThresholdTime = lateThresholdTime.trim();
