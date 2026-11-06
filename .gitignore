@@ -10,6 +10,8 @@ frontend/.env
 build/
 .cache/
 backend/data/db/
+backend/backups/
+backups/
 *.wt
 *.bson
 secrets.h

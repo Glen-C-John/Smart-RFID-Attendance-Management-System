@@ -214,16 +214,27 @@ void flushOfflineQueue() {
 }
 
 // ==========================================
-// 7. BACKEND HTTP POST DISPATCHER
+// 7. BACKEND HTTP/HTTPS POST DISPATCHER
 // ==========================================
 bool postScanPayload(const String& payload, bool isOfflineRetry) {
-  WiFiClient client;
   HTTPClient http;
+  bool isHttps = (strncmp(BACKEND_SCAN_URL, "https://", 8) == 0);
 
-  Serial.print(F("[HTTP] Sending scan to: "));
-  Serial.println(BACKEND_SCAN_URL);
+  Serial.printf("[HTTP%s] Sending scan to: %s\n", isHttps ? "S" : "", BACKEND_SCAN_URL);
 
-  if (!http.begin(client, BACKEND_SCAN_URL)) {
+  bool beginOk = false;
+  std::unique_ptr<BearSSL::WiFiClientSecure> secureClient;
+  WiFiClient plainClient;
+
+  if (isHttps) {
+    secureClient.reset(new BearSSL::WiFiClientSecure);
+    secureClient->setInsecure(); // Allows SSL connection without bulky hardcoded certificate fingerprints
+    beginOk = http.begin(*secureClient, BACKEND_SCAN_URL);
+  } else {
+    beginOk = http.begin(plainClient, BACKEND_SCAN_URL);
+  }
+
+  if (!beginOk) {
     Serial.println(F("[HTTP] Failed to initiate connection."));
     return false;
   }

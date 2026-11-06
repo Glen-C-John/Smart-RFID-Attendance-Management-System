@@ -10,7 +10,9 @@
     "db:stop": "(mongod --dbpath data/db --shutdown 2>/dev/null || $HOME/.cache/mongodb-binaries/mongod* --dbpath data/db --shutdown) 2>/dev/null || true",
     "test": "node --experimental-vm-modules node_modules/.bin/jest --runInBand --detectOpenHandles --forceExit",
     "migrate": "node src/scripts/migrateGoogleSheets.js",
-    "seed": "node src/scripts/seedData.js"
+    "seed": "node src/scripts/seedData.js",
+    "backup": "node src/scripts/backupDatabase.js",
+    "restore": "node src/scripts/restoreDatabase.js"
   },
   "keywords": [
     "rfid",
