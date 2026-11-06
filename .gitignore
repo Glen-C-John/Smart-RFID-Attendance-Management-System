@@ -12,6 +12,8 @@ build/
 backend/data/db/
 backend/backups/
 backups/
+reports_export/
+backend/reports_export/
 *.wt
 *.bson
 secrets.h

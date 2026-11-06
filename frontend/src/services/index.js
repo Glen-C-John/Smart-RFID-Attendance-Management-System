@@ -173,6 +173,136 @@ export const reportService = {
     const res = await api.get('/reports', { params });
     return res.data;
   },
+
+  async buildReport(data) {
+    const res = await api.post('/reports/generate', data);
+    return res.data;
+  },
+
+  async getHistory(limit = 50) {
+    const res = await api.get(`/reports/history?limit=${limit}`);
+    return res.data;
+  },
+};
+
+export const analyticsService = {
+  async getOverview(params = {}) {
+    const res = await api.get('/analytics/overview', { params });
+    return res.data;
+  },
+
+  async getTrends(params = {}) {
+    const res = await api.get('/analytics/trends', { params });
+    return res.data;
+  },
+
+  async getStudentAnalytics(studentId) {
+    const res = await api.get(`/analytics/student/${studentId}`);
+    return res.data;
+  },
+
+  async getClassesAnalytics(params = {}) {
+    const res = await api.get('/analytics/classes', { params });
+    return res.data;
+  },
+
+  async getHeatmap(params = {}) {
+    const res = await api.get('/analytics/heatmap', { params });
+    return res.data;
+  },
+
+  async getPunctuality(params = {}) {
+    const res = await api.get('/analytics/punctuality', { params });
+    return res.data;
+  },
+
+  async getDataQuality() {
+    const res = await api.get('/analytics/data-quality');
+    return res.data;
+  },
+
+  async getRiskOverview(params = {}) {
+    const res = await api.get('/analytics/risk', { params });
+    return res.data;
+  },
+};
+
+export const alertService = {
+  async getAlerts(params = {}) {
+    const res = await api.get('/alerts', { params });
+    return res.data;
+  },
+
+  async reviewAlert(studentId, comment) {
+    const res = await api.patch(`/alerts/${studentId}/review`, { comment });
+    return res.data;
+  },
+};
+
+export const calendarService = {
+  async getCalendar() {
+    const res = await api.get('/calendar');
+    return res.data.calendar;
+  },
+
+  async updateCalendar(data) {
+    const res = await api.put('/calendar', data);
+    return res.data.calendar;
+  },
+
+  async addHoliday(data) {
+    const res = await api.post('/calendar/holiday', data);
+    return res.data.calendar;
+  },
+
+  async removeHoliday(id) {
+    const res = await api.delete(`/calendar/holiday/${id}`);
+    return res.data.calendar;
+  },
+
+  async addSemester(data) {
+    const res = await api.post('/calendar/semester', data);
+    return res.data.calendar;
+  },
+
+  async removeSemester(id) {
+    const res = await api.delete(`/calendar/semester/${id}`);
+    return res.data.calendar;
+  },
+};
+
+export const scheduleService = {
+  async getSchedules() {
+    const res = await api.get('/report-schedules');
+    return res.data.schedules;
+  },
+
+  async createSchedule(data) {
+    const res = await api.post('/report-schedules', data);
+    return res.data.schedule;
+  },
+
+  async updateSchedule(id, data) {
+    const res = await api.put(`/report-schedules/${id}`, data);
+    return res.data.schedule;
+  },
+
+  async deleteSchedule(id) {
+    const res = await api.delete(`/report-schedules/${id}`);
+    return res.data;
+  },
+
+  async runScheduleNow(id) {
+    const res = await api.post(`/report-schedules/${id}/run-now`);
+    return res.data;
+  },
+};
+
+export const auditLogService = {
+  async getLogs(params = {}) {
+    const res = await api.get('/audit-logs', { params });
+    return res.data;
+  },
 };
 
 export const settingsService = {

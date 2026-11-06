@@ -6,6 +6,11 @@ const RfidCard = require('../models/RfidCard');
 const Attendance = require('../models/Attendance');
 const Device = require('../models/Device');
 const Setting = require('../models/Setting');
+const InstitutionCalendar = require('../models/InstitutionCalendar');
+const AttendanceAlert = require('../models/AttendanceAlert');
+const ReportSchedule = require('../models/ReportSchedule');
+const GeneratedReport = require('../models/GeneratedReport');
+const AuditLog = require('../models/AuditLog');
 
 const runBackup = async () => {
   try {
@@ -21,16 +26,32 @@ const runBackup = async () => {
 
     const backupFile = path.join(backupDir, `mongodb_backup_${timestamp}.json`);
 
-    const [students, rfidcards, attendances, devices, settings] = await Promise.all([
+    const [
+      students,
+      rfidcards,
+      attendances,
+      devices,
+      settings,
+      calendars,
+      alerts,
+      schedules,
+      reports,
+      auditlogs,
+    ] = await Promise.all([
       Student.find().lean(),
       RfidCard.find().lean(),
       Attendance.find().lean(),
       Device.find().lean(),
       Setting.find().lean(),
+      InstitutionCalendar.find().lean(),
+      AttendanceAlert.find().lean(),
+      ReportSchedule.find().lean(),
+      GeneratedReport.find().lean(),
+      AuditLog.find().lean(),
     ]);
 
     const backupData = {
-      version: '2.0.0',
+      version: '3.0.0',
       timestamp: new Date().toISOString(),
       counts: {
         students: students.length,
@@ -38,6 +59,11 @@ const runBackup = async () => {
         attendances: attendances.length,
         devices: devices.length,
         settings: settings.length,
+        calendars: calendars.length,
+        alerts: alerts.length,
+        schedules: schedules.length,
+        reports: reports.length,
+        auditlogs: auditlogs.length,
       },
       data: {
         students,
@@ -45,6 +71,11 @@ const runBackup = async () => {
         attendances,
         devices,
         settings,
+        calendars,
+        alerts,
+        schedules,
+        reports,
+        auditlogs,
       },
     };
 
@@ -74,3 +105,4 @@ if (require.main === module) {
 }
 
 module.exports = { runBackup };
+

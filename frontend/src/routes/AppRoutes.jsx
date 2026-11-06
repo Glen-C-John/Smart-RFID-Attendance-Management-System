@@ -11,6 +11,9 @@ import { Attendance } from '../pages/Attendance';
 import { Devices } from '../pages/Devices';
 import { Reports } from '../pages/Reports';
 import { Settings } from '../pages/Settings';
+import { Analytics } from '../pages/Analytics';
+import { CalendarManager } from '../pages/CalendarManager';
+import { AuditLogs } from '../pages/AuditLogs';
 import { Loader2 } from 'lucide-react';
 
 const ProtectedRoute = ({ children }) => {
@@ -72,12 +75,15 @@ export const AppRoutes = () => {
         }
       >
         <Route index element={<Dashboard />} />
+        <Route path="analytics" element={<Analytics />} />
         <Route path="students" element={<Students />} />
         <Route path="students/:id" element={<StudentDetails />} />
         <Route path="cards" element={<RFIDCards />} />
         <Route path="attendance" element={<Attendance />} />
         <Route path="devices" element={<Devices />} />
         <Route path="reports" element={<Reports />} />
+        <Route path="calendar" element={<CalendarManager />} />
+        <Route path="audit-logs" element={<AuditLogs />} />
         <Route path="settings" element={<Settings />} />
       </Route>
 

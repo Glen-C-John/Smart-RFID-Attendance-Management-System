@@ -99,3 +99,4 @@ After restoring from any snapshot:
 3. Verify physical card bindings: `GET /api/v1/cards`
 4. Verify historical attendance records: `GET /api/v1/reports?type=monthly`
 5. Verify hardware connectivity: `POST /api/v1/device/ping`
+

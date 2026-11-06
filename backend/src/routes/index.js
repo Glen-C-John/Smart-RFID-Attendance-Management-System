@@ -14,6 +14,13 @@ const deviceRoutes = require('./deviceRoutes');
 const reportRoutes = require('./reportRoutes');
 const settingsRoutes = require('./settingsRoutes');
 
+// Phase 3 Intelligence & Reporting Routes
+const analyticsRoutes = require('./analyticsRoutes');
+const alertRoutes = require('./alertRoutes');
+const calendarRoutes = require('./calendarRoutes');
+const reportScheduleRoutes = require('./reportScheduleRoutes');
+const auditLogRoutes = require('./auditLogRoutes');
+
 // Health Check Endpoint
 router.get('/health', (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
@@ -29,11 +36,11 @@ router.get('/health', (req, res) => {
       name: mongoose.connection.name || null,
     },
     uptimeSeconds: Math.floor(process.uptime()),
-    version: '2.0.0',
+    version: '3.0.0',
   });
 });
 
-// API Routes
+// Standard API Routes
 router.use('/auth', authRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/device', scanRoutes);
@@ -43,5 +50,12 @@ router.use('/attendance', attendanceRoutes);
 router.use('/devices', deviceRoutes);
 router.use('/reports', reportRoutes);
 router.use('/settings', settingsRoutes);
+
+// Phase 3 Extended Routes
+router.use('/analytics', analyticsRoutes);
+router.use('/alerts', alertRoutes);
+router.use('/calendar', calendarRoutes);
+router.use('/report-schedules', reportScheduleRoutes);
+router.use('/audit-logs', auditLogRoutes);
 
 module.exports = router;

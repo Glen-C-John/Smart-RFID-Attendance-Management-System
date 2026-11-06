@@ -61,6 +61,14 @@ const startServer = async () => {
       console.log(`[Config] Loaded persisted institution settings (${saved.institutionName})`);
     }
 
+    // Start background automated report scheduler runner
+    const reportBuilderService = require('./services/reportBuilderService');
+    const scheduleInterval = setInterval(() => {
+      reportBuilderService.runDueSchedules().catch((err) => {
+        console.error('[Scheduler Runner Error]:', err.message);
+      });
+    }, 60000);
+
     server.listen(config.port, '0.0.0.0', () => {
       console.log(`====================================================`);
       console.log(`  RFID Attendance Backend API & Socket Server       `);
@@ -73,6 +81,7 @@ const startServer = async () => {
 
     const gracefulShutdown = async (signal) => {
       console.log(`\nReceived ${signal}. Shutting down gracefully...`);
+      if (scheduleInterval) clearInterval(scheduleInterval);
       io.close();
       server.close(async () => {
         await disconnectDB();

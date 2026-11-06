@@ -6,6 +6,11 @@ const RfidCard = require('../models/RfidCard');
 const Attendance = require('../models/Attendance');
 const Device = require('../models/Device');
 const Setting = require('../models/Setting');
+const InstitutionCalendar = require('../models/InstitutionCalendar');
+const AttendanceAlert = require('../models/AttendanceAlert');
+const ReportSchedule = require('../models/ReportSchedule');
+const GeneratedReport = require('../models/GeneratedReport');
+const AuditLog = require('../models/AuditLog');
 
 const runRestore = async (backupFilePath) => {
   if (!backupFilePath) {
@@ -30,7 +35,18 @@ const runRestore = async (backupFilePath) => {
       throw new Error("Invalid backup format: missing 'data' root object");
     }
 
-    const { students = [], rfidcards = [], attendances = [], devices = [], settings = [] } = backupJson.data;
+    const {
+      students = [],
+      rfidcards = [],
+      attendances = [],
+      devices = [],
+      settings = [],
+      calendars = [],
+      alerts = [],
+      schedules = [],
+      reports = [],
+      auditlogs = [],
+    } = backupJson.data;
 
     let restoredStudents = 0;
     for (const s of students) {
@@ -66,6 +82,18 @@ const runRestore = async (backupFilePath) => {
       restoredSettings++;
     }
 
+    let restoredCalendars = 0;
+    for (const cal of calendars) {
+      await InstitutionCalendar.updateOne({}, { $set: cal }, { upsert: true });
+      restoredCalendars++;
+    }
+
+    let restoredSchedules = 0;
+    for (const sc of schedules) {
+      await ReportSchedule.updateOne({ title: sc.title }, { $set: sc }, { upsert: true });
+      restoredSchedules++;
+    }
+
     console.log('====================================================');
     console.log('  Database Restoration Completed Successfully       ');
     console.log(`  Source:      ${resolvedPath}`);
@@ -74,6 +102,8 @@ const runRestore = async (backupFilePath) => {
     console.log(`  Attendance:  ${restoredAttendances} upserted`);
     console.log(`  Devices:     ${restoredDevices} upserted`);
     console.log(`  Settings:    ${restoredSettings} upserted`);
+    console.log(`  Calendars:   ${restoredCalendars} upserted`);
+    console.log(`  Schedules:   ${restoredSchedules} upserted`);
     console.log('====================================================');
 
     return {
@@ -83,6 +113,11 @@ const runRestore = async (backupFilePath) => {
         rfidcards: restoredCards,
         attendances: restoredAttendances,
         devices: restoredDevices,
+        settings: restoredSettings,
+        calendars: restoredCalendars,
+        schedules: restoredSchedules,
+      },
+    };
         settings: restoredSettings,
       },
     };
@@ -100,3 +135,4 @@ if (require.main === module) {
 }
 
 module.exports = { runRestore };
+

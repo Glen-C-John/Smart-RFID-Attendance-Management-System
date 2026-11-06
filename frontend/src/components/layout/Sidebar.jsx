@@ -12,16 +12,22 @@ import {
   ChevronLeft,
   ChevronRight,
   Radio,
+  LineChart,
+  CalendarDays,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const navItems = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+  { name: 'Analytics', path: '/analytics', icon: LineChart },
   { name: 'Students', path: '/students', icon: Users },
   { name: 'RFID Cards', path: '/cards', icon: CreditCard },
   { name: 'Attendance', path: '/attendance', icon: CalendarCheck },
   { name: 'Devices', path: '/devices', icon: Cpu },
   { name: 'Reports', path: '/reports', icon: FileBarChart },
+  { name: 'Calendar', path: '/calendar', icon: CalendarDays },
+  { name: 'Audit Trail', path: '/audit-logs', icon: ShieldCheck },
   { name: 'Settings', path: '/settings', icon: Settings },
 ];
 

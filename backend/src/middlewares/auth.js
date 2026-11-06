@@ -44,6 +44,20 @@ const requireAdminAuth = (req, res, next) => {
   return errorResponse(res, 'Unauthorized: Invalid or missing administrative credentials', 401);
 };
 
+const authorize = (roles = []) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return errorResponse(res, 'Unauthorized: Authentication required', 401);
+    }
+    if (roles.length && !roles.includes(req.user.role)) {
+      return errorResponse(res, 'Forbidden: Insufficient privileges', 403);
+    }
+    next();
+  };
+};
+
 module.exports = {
   requireAdminAuth,
+  authenticate: requireAdminAuth,
+  authorize,
 };
